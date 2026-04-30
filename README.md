@@ -1,4 +1,3 @@
-# Research_proposal_writing
 # Evaluating the Robustness of LLMs Against Prompt Injection Attacks
 
 **Author:** Abdurehim Mohammed  
