@@ -1,0 +1,276 @@
+\documentclass[12pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage[table]{xcolor}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{cite}
+\usepackage[colorlinks=true, linkcolor=black, citecolor=blue, urlcolor=blue]{hyperref}
+
+% --- Custom Colors & Commands ---
+\definecolor{primarycolor}{RGB}{26, 58, 92}
+\definecolor{subheadcolor}{RGB}{31, 97, 141}
+\newcommand{\done}{\cellcolor{primarycolor}} % For Gantt Chart shading
+
+% Spacing
+\onehalfspacing
+\setlength{\parindent}{0.5in}
+\setlength{\parskip}{0.5em}
+
+% Section Title Formatting (Includes TOC linking)
+\titleformat{\section}{\Large\bfseries\color{primarycolor}}{}{0em}{\MakeUppercase}[\vspace{0.1in}\hrule]
+\titleformat{\subsection}{\large\bfseries\color{subheadcolor}}{}{0em}{}
+
+\begin{document}
+
+% --- Cover Page ---
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    
+    {\LARGE \textbf{HAWASSA UNIVERSITY}}\\[0.5cm]
+    {\LARGE Institute of Technology}\\[0.5cm]
+    {\LARGE Department of Computer Science}\\[1cm]
+    {\Large Research Methods in Computer Science}\\[2cm]
+    {\large Artificial Intelligence / Cybersecurity}\\[0.5cm]
+    
+    
+    \vspace{0.5cm}
+    {\LARGE \textbf{Evaluating the Robustness of Large Language Models (LLMs) Against Prompt Injection Attacks in Automated Customer Service Systems}}
+    \vspace{0.5cm}
+    \vspace{2.5cm}
+    
+    \begin{table}[h]
+        \centering
+        \large
+        \renewcommand{\arraystretch}{1.5}
+        \vspace{1cm} % Adjust vertical space as needed
+
+{\Large % Starts the larger font size
+\begin{flushleft}
+    \textbf{Name:} Abdurehim Mohammed \\
+    \textbf{ID:} 1034/16
+\end{flushleft}
+}
+
+\vspace{2.5cm} % Pulls the next block up so they appear on similar levels
+
+\begin{flushright}
+    \textbf{Submitted To:} Birehane D. \\
+    \textbf{Submission Date:} May 1 , 2026
+\end{flushright}
+    \end{table}
+    
+    \vfill
+\end{titlepage}
+
+\newpage
+
+% --- Table of Contents ---
+\tableofcontents
+\newpage
+
+% --- Document Body ---
+
+\section{Introduction}
+
+The emergence of Large Language Models (LLMs) as the engine behind automated customer service platforms represents one of the most consequential shifts in how organizations interact with their customers. Systems powered by models such as GPT-4, Claude, LLaMA, and Mistral are now deployed at scale across banking, telecommunications, e-commerce, and healthcare — handling sensitive queries, processing transactions, and managing account information around the clock with minimal human oversight. This adoption has driven measurable gains in operational efficiency: reduced staffing costs, extended service hours, and faster response times have made LLM-powered agents an attractive investment for organizations of every scale.
+
+However, this rapid deployment has outpaced the development of the security frameworks needed to protect these systems. LLMs were not designed with adversarial robustness as a primary objective; they were optimized for language understanding and generation. This fundamental design orientation creates a security surface that conventional cybersecurity tools were not built to address. Traditional defenses — firewalls, intrusion detection systems, input validation rules — operate on structured data and known attack signatures. They have no mechanism for detecting a threat that arrives as a grammatically correct, contextually plausible sentence.
+
+It is within this context that prompt injection has emerged as a critical and growing vulnerability class. Recognized by OWASP as the top risk in its LLM Application Security Top 10 (2023), prompt injection attacks exploit the inability of current transformer-based architectures to maintain a reliable trust boundary between system-level instructions and user-provided inputs. Because both types of content are processed as tokens within the same context window, a sophisticated user can craft an input that the model interprets as a higher-priority instruction — overriding safety constraints, extracting protected information, or redirecting system behavior in ways that violate organizational policies and customer trust.
+
+Customer service deployments are particularly attractive targets for this class of attack. These systems routinely handle sensitive personal and financial data, operate with deeply embedded business logic in their system prompts, and maintain persistent conversation histories that sophisticated attackers can manipulate across multiple turns. Despite the severity of this exposure, the research community has not yet produced a standardized, domain-specific framework for evaluating or defending against prompt injection in this context. This proposal addresses that gap.
+
+\ssection{Problem Statement}
+
+\textbf{Ideal}\\
+An LLM-powered customer service system should maintain an inviolable separation between trusted system instructions and untrusted user inputs. It should reliably detect and reject adversarial attempts to override its behavioral constraints — regardless of phrasing, encoding, or multi-turn distribution — while security teams have access to standardized, domain-specific evaluation tools to audit robustness before deployment and continuously during operation.
+
+\textbf{Reality}\\
+Current LLMs process system prompts and user inputs as tokens within the same context window, with no architectural trust hierarchy separating them. Adversarially crafted inputs routinely override system directives, elicit sensitive data, and impersonate system authority across all leading model families. No validated, customer-service-specific adversarial evaluation benchmark currently exists, leaving organizations unable to measure or manage their exposure. Existing defenses — keyword blacklists, prompt delimiters, and output classifiers — have not been rigorously tested against sophisticated, multi-variant injection campaigns in domain-realistic settings, and their failure modes remain poorly characterized.
+
+\textbf{Consequence}\\
+Successful prompt injection attacks against deployed customer service LLMs result in unauthorized disclosure of personal and financial data, fraudulent execution of account actions, regulatory penalties under data protection law, and erosion of consumer trust. These consequences are disproportionately severe in developing countries and emerging markets where digital consumer protection frameworks remain immature, recourse mechanisms are limited, and the consequences of a breach fall most heavily on users with the least institutional support.
+
+\section{Objectives}
+
+\textbf{General Objective:} To design, implement, and empirically validate a domain-specific adversarial evaluation framework that systematically assesses the robustness of LLMs against prompt injection attacks in automated customer service environments, and to derive and test a layered defense architecture that measurably reduces attack success rates without compromising legitimate system functionality.
+
+\textbf{Specific SMART Objectives:}
+\begin{itemize}[leftmargin=1in]
+    \item[\textbf{SO1:}] Construct and manually validate a taxonomy of 120+ prompt injection test cases — spanning direct, indirect, multi-turn, and obfuscation-based attack variants — by end of Month 3 (Specific, Measurable by case count and validation rate, Achievable, Relevant, Time-bound).
+    \item[\textbf{SO2:}] Evaluate the Attack Success Rate (ASR) and Behavioral Compliance Score (BCS) of four leading LLMs (GPT-4o, Claude 3.5, LLaMA 3, Mistral 7B) under the full test suite within a controlled Simulated Customer Service Evaluation Environment (SCSEE) by end of Month 5.
+    \item[\textbf{SO3:}] Implement and compare four defense mechanisms — input sanitization, instruction hierarchy enforcement, BERT-based output guardrail, and RAG injection filtering — measuring Defense Bypass Rate (DBR) and False Positive Rate (FPR) for each mechanism by end of Month 7, with a target FPR below 8\%.
+\end{itemize}
+
+\section{Literature Review and Synthesis Matrix}
+
+\subsection{Synthesis Matrix}
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{3.5cm} >{\raggedright\arraybackslash}p{3cm} >{\raggedright\arraybackslash}p{3cm} >{\raggedright\arraybackslash}p{3.5cm}}
+\toprule
+\textbf{Author \& Source} & \textbf{Method} & \textbf{Dataset} & \textbf{Key Metric} & \textbf{Limitation} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Author \& Source} & \textbf{Method} & \textbf{Dataset} & \textbf{Key Metric} & \textbf{Limitation} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\bottomrule
+\endlastfoot
+
+Perez \& Ribeiro (2022) \cite{perez2022} \newline \textit{ACM CCS} & Role reassignment and goal hijacking against InstructGPT; manual adversarial prompt construction & Custom crafted prompts (n=50 templates) & ASR: 72\% with no defenses & Abstract NLP only; no domain context, session modeling, or defense evaluation \\
+\midrule
+Greshake et al. (2023) \cite{greshake2023} \newline \textit{IEEE S\&P} & Indirect injection via malicious content in web pages and documents retrieved by LLM agents & Custom indirect injection set using live retrieval chains & Data exfiltration: 68\%; code execution success: 91\% & No defense evaluation; no customer service business logic or session context \\
+\midrule
+Liu et al. (2023) \cite{liu2023} \newline \textit{ACM CCS} & Systematic taxonomy of 5 injection categories across 10 LLM-integrated applications & Self-constructed benchmark (10 real-world apps) & ASR range: 15\%–85\% by model and attack type & No defense evaluation; customer service context absent; no multi-turn attacks \\
+\midrule
+Toyer et al. (2024) \cite{toyer2024} \newline \textit{IEEE Trans. Dep. Sec. Comp.} & Game-based crowdsourced injection elicitation (Tensor Trust) with labeled outcomes & 126,000+ labeled attack interactions & Smaller models 3$\times$ more vulnerable than larger models & Game context lacks ecological validity; no real data flows or business logic \\
+\midrule
+Yi et al. (2025) \cite{yi2025} \newline \textit{Comput. \& Security} & Benchmarking of 5 defense strategies across 8 LLMs using standardized injection suite & PromptBench + custom extension (n=240 cases) & Best defense: ASR 67\%$\rightarrow$22\%; FPR=11\% & 11\% FPR commercially unacceptable; no multi-turn or CS-domain scenarios tested \\
+\end{longtable}
+
+\subsection{Synthesis and Research Gap}
+The five studies above collectively define the current state of the art in prompt injection security and, taken together, reveal a precise and significant gap that this research is designed to close. Perez and Ribeiro \cite{perez2022} established the foundational vulnerability: instruction-tuned LLMs cannot reliably separate adversarial user inputs from legitimate system instructions, producing an Attack Success Rate of 72\% under undefended conditions. Their work, however, operated in a context-free setting with a small manually crafted prompt set — a methodology that cannot capture the threat model of a deployed customer service system where real account data flows through conversations and attackers may sustain campaigns across multiple interaction turns.
+
+Greshake et al. \cite{greshake2023} extended the threat surface critically by demonstrating that injection does not require direct user interaction. Malicious instructions embedded within documents retrieved by an LLM agent — a design pattern central to RAG-based customer service deployments — can compromise system behavior without any visible attacker input. This indirect attack vector is of particular relevance to the deployment context this research targets, yet no defensive evaluation accompanied their study. Liu et al. \cite{liu2023} contributed the most comprehensive attack taxonomy, confirming that ASR varies dramatically (15\%–85\%) by model architecture and attack category, reinforcing the importance of model-specific evaluation — but again without defense evaluation or domain specificity.
+
+The Tensor Trust dataset from Toyer et al. \cite{toyer2024} provides the largest empirical injection resource yet assembled, but the game setting that generated it lacks the ecological validity of a real customer service deployment: there are no sensitive account records to protect, no business policies to bypass, and no economic incentives shaping attacker behavior. Most critically, Yi et al. (2025) \cite{yi2025} — the closest existing work to a defense evaluation framework — achieved an 11\% False Positive Rate under the best-performing defense combination. One in nine legitimate customer queries incorrectly blocked represents a commercially unacceptable outcome for any production deployment. The gap this research fills is therefore specific and well-defined: no existing study has simultaneously evaluated prompt injection robustness within a realistic customer service architecture, measured defenses against domain-specific attack scenarios, and produced a framework achieving low ASR at a commercially viable FPR below 8\%. This project addresses all three dimensions.
+
+\section{Proposed Methodology}
+
+\subsection{System Architecture}
+The research will be conducted within a purpose-built Simulated Customer Service Evaluation Environment (SCSEE) — a four-layer modular platform designed to replicate the functional architecture of a real-world LLM-powered customer service deployment while providing the instrumentation required for rigorous adversarial testing:
+\begin{itemize}
+    \item \textbf{Customer Interface Layer (React.js):} A browser-based chat portal replicating the user-facing input surface. Handles session initiation, conversation history rendering, and user input capture — the primary interface through which all injection test cases are submitted.
+    \item \textbf{Orchestration Middleware Layer (Python / FastAPI):} The core experimental control plane. Manages LLM API routing, enforces system prompt configurations, activates and deactivates defense mechanisms, and logs all experimental events in structured JSON format.
+    \item \textbf{LLM Integration Layer (OpenAI API / Anthropic API / Ollama):} Standardized API connections to GPT-4o, Claude 3.5 Sonnet, LLaMA 3 8B, and Mistral 7B. All models receive identically structured prompts to ensure valid cross-model comparison.
+    \item \textbf{Logging and Analysis Layer (PostgreSQL / Jupyter):} Schema-validated event storage with a Python analysis module computing all robustness metrics and producing comparative visualizations for reporting.
+\end{itemize}
+\enlargethispage{3\baselineskip}
+\vspace{-2em}
+\subsection{Tool Justification}
+
+\begin{tabularx}{\textwidth}{>{\hsize=.3\hsize\raggedright\arraybackslash}X >{\hsize=.25\hsize\raggedright\arraybackslash}X >{\hsize=.45\hsize\raggedright\arraybackslash}X}
+\toprule
+\textbf{Tool} & \textbf{Alternative Considered} & \textbf{Justification} \\
+\midrule
+Python 3.11 + FastAPI & Node.js / Express & Native async minimizes latency during high-volume test runs; direct access to full ML ecosystem (transformers, scikit-learn, sentence-transformers) without bridging layers. \\
+\midrule
+Ollama (local LLM inference) & HuggingFace Transformers direct & Unified model-agnostic API wrapper eliminates per-model configuration differences that would introduce confounds across open-source model comparisons. \\
+\midrule
+sentence-transformers (all-mpnet-base-v2) & TF-IDF / BM25 & Dense semantic embeddings detect paraphrased and obfuscated injection patterns that lexical similarity measures miss — critical for obfuscation attack detection. \\
+\midrule
+Fine-tuned BERT output classifier & Regex rule-based classifier & BERT recognizes policy violations through learned semantic patterns; regex-based rules fail against novel phrasings not present in the predefined rule set. \\
+\midrule
+Garak LLM vulnerability scanner & Manual test-case execution only & Automates structured probe suites at throughput scale impractical through manual submission; enables fully reproducible, version-controlled experimental testing. \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Data Strategy}
+\textbf{Dataset Sources:} The attack test suite is seeded from PromptBench (IEEE DataPort), the Tensor Trust Dataset, and the Garak probe library, and extended with 60 novel customer-service-specific injection variants — covering policy bypass, unauthorized refund manipulation, account privilege escalation, and multi-turn context poisoning — each manually validated by the research team. All customer profile data used as the protected target is fully synthetic, generated via the Python Faker library, eliminating all personal data exposure risk.
+
+\textbf{Pre-processing Pipeline:} (1) Unicode normalization (NFC form) to neutralize homoglyph substitution attacks while preserving raw inputs for analysis. (2) Semantic embedding via all-mpnet-base-v2 for similarity-based injection detection. (3) Attack label assignment by category, expected behavior, and severity tier. (4) Schema validation of all logged experimental events before database insertion to ensure analytical integrity.
+
+\subsection{Evaluation Metrics}
+\enlargethispage{3\baselineskip}
+\vspace{-1em}
+\begingroup
+\renewcommand{\arraystretch}{1.2} % Reduces row height (default is often higher)
+\setlength{\tabcolsep}{3pt}      % Squeezes columns horizontally to save space
+\noindent
+\begin{tabularx}{\textwidth}{@{} l l >{\hsize=1.4\hsize}X >{\hsize=0.6\hsize}X @{}}
+\toprule
+\textbf{Metric}  & \textbf{Symbol} & \textbf{Formula} & \textbf{Target} \\
+\midrule
+Attack Success Rate & ASR & $\frac{\text{Successful Attacks}}{\text{Total Attempts}} \times 100\%$ & $< 30\%$ \\ \midrule
+Defense Bypass Rate & DBR & $\frac{\text{Bypassing Attacks}}{\text{Total Post-Defense}} \times 100\%$ & $< 25\%$ \\ \midrule
+False Positive Rate & FPR & $\frac{\text{Legit. Queries Blocked}}{\text{Total Legit. Queries}} \times 100\%$ & $< 8\%$ \\ \midrule
+Behavioral Comp. & BCS & $\frac{\text{Compliant Responses}}{\text{Total Responses}} \times 100\%$ & $> 90\%$ \\ \midrule
+Data Leakage Rate & DLR & $\frac{\text{PII Responses}}{\text{Total Responses}} \times 100\%$ & $< 2\%$ \\ \midrule
+Defense Latency & DOL & Mean Latency (ON - OFF) & $< 400$ ms \\
+\bottomrule
+\end{tabularx}
+\endgroup
+\vspace{0.5em}
+\noindent Statistical significance of differences across model and defense conditions is assessed using paired Wilcoxon signed-rank tests ($\alpha$ = 0.05, Bonferroni-corrected for multiple comparisons across four models).
+
+\subsection{Software Development Lifecycle}
+The project follows a hybrid Agile-Scrum and scientific experimental design methodology across six phases spanning 24 weeks. Agile two-week sprints govern SCSEE software development; a pre-registered experimental protocol governs adversarial evaluation phases — ensuring engineering flexibility while maintaining the scientific rigor required for reproducible results. All experimental parameters are documented publicly before data collection begins.
+
+\section{Significance and Impact}
+The significance of this research extends across three interconnected dimensions. At the technical level, it delivers the first domain-specific adversarial evaluation framework for LLMs in customer service environments — reusable infrastructure for researchers and security practitioners. The SCSEE, standardized attack taxonomy, and comparative robustness benchmarks will constitute an open-source resource that other investigators can build upon and extend to adjacent domains.
+
+At the organizational level, the findings directly benefit the growing number of companies that have deployed or are planning to deploy LLM-powered customer service agents — particularly those in developing countries that lack in-house AI security expertise. A publicly available evaluation framework and security guideline document gives these organizations practical, evidence-based tools to assess and improve their defenses without requiring deep specialist knowledge or expensive proprietary infrastructure.
+
+At the societal level, the research contributes to digital trust — the foundational condition for the economic and social benefits that AI-powered services promise. Where digital financial and service infrastructure is expanding rapidly and consumer protection frameworks are still developing, strengthening the security of LLM deployments has direct implications for the welfare of millions of users whose sensitive data and financial transactions depend on the integrity of these systems.
+
+\section{Ethical Considerations}
+\textbf{GDPR and Data Privacy:} All experimental data is fully synthetic. No real personal, financial, or health information is processed at any stage of the research. The SCSEE operates in a network-isolated environment, and commercial API calls comply with provider data usage terms. A formal Data Protection Impact Assessment (DPIA) aligned with GDPR Article 25 (Privacy by Design) will be completed before experiments begin, alongside formal institutional Research Ethics Committee clearance.
+
+\textbf{Algorithmic Bias:} A pre-registered experimental protocol — documenting all test cases, defense configurations, and evaluation metrics before data collection begins — prevents evaluation bias from inadvertently favoring specific model architectures. Standardized API call structures ensure all models receive identical context configurations. The attack test suite is independently reviewed for linguistic and stylistic bias to ensure that attack difficulty is not correlated with writing characteristics that may differentially affect models trained on different corpora.
+
+\textbf{Environmental Impact:} Open-source local inference models (LLaMA 3, Mistral via Ollama) are prioritized throughout the experimental design to minimize commercial API compute consumption. Experimental runs are batched to maximize GPU utilization efficiency. The CodeCarbon Python library will track and report the study's total carbon footprint in the final published work, supporting the emerging norm of environmental transparency in AI research.
+
+\textbf{Responsible Disclosure:} Any novel attack technique developed during the research that is found to be highly effective against specific currently deployed systems will be handled under a 90-day responsible disclosure protocol, notifying relevant model providers before public publication. Research findings will be communicated at the level of principles, categories, and defensive implications — not as ready-made exploitation tools.
+
+\section{Project Timeline — Gantt Chart}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|>{\raggedright\arraybackslash}p{5.5cm} | c | *{9}{c|} } % Adds vertical lines (|)
+\hline % Replaces \toprule for a consistent look with grids
+\textbf{Phase -- Key Activities and Deliverables} & \textbf{Weeks} 
+& \textbf{M1} & \textbf{M2} & \textbf{M3} & \textbf{M4} & \textbf{M5} 
+& \textbf{M6} & \textbf{M7} & \textbf{M8} & \textbf{M9} \\ \hline \hline
+
+\textbf{Ph.1: Literature Review \& Gap Analysis} \newline \footnotesize 
+& 1--4 & \done  & & & & & & & & \\ \hline
+
+\textbf{Ph.2: SCSEE Environment Setup} \newline \footnotesize 
+& 5--8 &  & \done & & & & & & &\\ \hline
+
+\textbf{Ph.3: Attack Suite Development} \newline \footnotesize 
+& 9--12 & & & \done & & & & & &\\ \hline
+
+\textbf{Ph.4: Baseline Vulnerability Evaluation} \newline \footnotesize 
+& 13--20 & & & & \done &  \done & & & &    \\ \hline
+
+\textbf{Ph.5: Defense Mechanism Implementation \& Testing} \newline \footnotesize  
+& 21- 24 & & & & & & \done & & &  \\ \hline
+
+\textbf{Ph.6: Layered Defense Optimization} \newline \footnotesize  & 25--28 & & & & & & & \done & & \\ \hline
+
+\textbf{Ph.7: Analysis, Documentation \& Final Writing} \newline \footnotesize  & 29–36 & & & & & & & & \done & \done \\ \hline
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{0.2cm}
+\noindent \textit{\small \textbf{Legend:} Active phase durations are shaded. Each phase includes deliverables and outputs that feed into subsequent phases. Phases 4–6 include iterative feedback loops where findings from evaluation phases directly inform defense implementation priorities.}
+
+\vspace{0.2cm}
+\noindent \textbf{Key Milestones:} \textbf{Month 3:} Attack taxonomy finalized $|$ \textbf{Month 5:} Baseline evaluation complete $|$ \textbf{Month 7:} All defenses evaluated $|$ \textbf{Month 9:} Final framework and dissertation submitted
+
+\section{Conclusion}
+Prompt injection represents a cybersecurity threat unlike any that conventional tools were designed to address — it operates in the same natural language that LLMs are built to understand and follow, making it invisible to signature-based defenses and architecturally difficult to contain. As organizations continue to deploy LLM-powered systems in customer service roles that handle sensitive data and execute consequential actions, the absence of validated, domain-specific security evaluation frameworks represents a growing and increasingly costly risk.
+
+This research offers a rigorous and practically grounded response. The three expected outcomes are: (1) a validated open-source adversarial evaluation framework (SCSEE) providing both researchers and industry practitioners with a reproducible robustness assessment tool tailored to the customer service deployment context; (2) a comparative robustness benchmark — the first domain-specific ASR and BCS analysis across four leading LLMs under standardized injection conditions; and (3) a layered defense framework empirically validated to achieve at least 65\% ASR reduction while maintaining a commercially viable False Positive Rate below 8\%. Together, these contributions move the field from theoretical concern to actionable, deployable security — enabling organizations to build LLM-powered customer service systems that are not only capable and efficient, but genuinely trustworthy.
+
+% --- Bibliography ---
+\newpage
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}
