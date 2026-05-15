@@ -57,7 +57,11 @@ include 'includes/header.php';
                 <?php while ($item = $menuResult->fetch_assoc()): ?>
                 <div class="menu-card" data-category="<?php echo $item['category_id']; ?>">
                     <div class="menu-card-image">
-                        <div class="menu-img-placeholder">
+                        <img src="<?php echo SITE_URL; ?>/images/<?php echo htmlspecialchars($item['image']); ?>" 
+                             alt="<?php echo htmlspecialchars($item['name']); ?>" 
+                             class="menu-card-img"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="menu-img-placeholder" style="display:none;">
                             <i class="fas fa-drumstick-bite"></i>
                         </div>
                         <span class="menu-card-category"><?php echo htmlspecialchars($item['category_name']); ?></span>
